@@ -19,4 +19,10 @@ public interface BoardDAO {
 	// 검색과 페이징을 위한 함수
 	public List<BoardVO> listSearch(SearchCriteria cri) throws Exception;
 	public int listSearchCount(SearchCriteria cri) throws Exception;
+	
+	// 댓글의 숫자를 변경
+	public void updateReplycnt(Integer bno, int amount) throws Exception;
+	
+	// 조회 숫자 처리
+	public void updateViewCnt(Integer bno) throws Exception;
 }

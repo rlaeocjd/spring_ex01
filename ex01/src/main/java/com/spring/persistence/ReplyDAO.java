@@ -19,4 +19,7 @@ public interface ReplyDAO {
 	public List<ReplyVO> listPage(Integer bno, Criteria cri) throws Exception;
 	// 화면 페이징 처리를 위한 댓글수 계산
 	public int count(Integer bno) throws Exception;
+	
+	// 댓글 삭제시 해당 게시물의 번호 획득
+	public int getBno(Integer rno) throws Exception;
 }

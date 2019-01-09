@@ -41,7 +41,16 @@ function boardEvent() {
 		formObj.submit();
 	});
 }
-
+//덧글과 페이징 출력
+function getPage(pageInfo) {
+	$.getJSON(pageInfo, function(data) {
+		$("#modalModify").modal("hide");
+		$("#replycntSmall2").html("[ " + data.pageMaker.totalCount + " ]");
+		
+		printData(data.list, $("#repliesDiv"), $("#template"));
+		printPaging(data.pageMaker, $(".pagination"));
+	});
+}
 /* 댓글 관련 이벤트 */
 function replyEvent() {
 	// 댓글 등록, 페이징 1로 이동
@@ -88,6 +97,7 @@ function replyEvent() {
 	$(".pagination").on("click", "li a", function(event) {
 		event.preventDefault();
 		replyPage = $(this).attr("href");
+		
 		getPage("/replies/" + bno + "/" + replyPage);
 	});
 	
@@ -145,15 +155,9 @@ function replyEvent() {
 	})
 }
 
-// 덧글과 페이징 출력
-function getPage(pageInfo) {
-	$.getJSON(pageInfo, function(data) {
-		printData(data.list, $("#repliesDiv"), $("#template"));
-		printPaging(data.pageMaker, $(".pagination"));
-	});
-}
+
 // Handlebars를 이용하여 덧글 출력
-var printData = function(replyArr, target, templateObject) {
+function printData(replyArr, target, templateObject) {
 	var template = Handlebars.compile(templateObject.html());
 
 	var html = template(replyArr);

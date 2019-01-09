@@ -4,10 +4,8 @@
 	pageEncoding="UTF-8"%>
 
 <%@ include file="../include/header.jsp"%>
-<!-- handlebars -->
-<script	src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.js"></script>
 
-<!-- ------------------ 게시글 -------------------------- -->
+
 <form role="form">
 	<input type="hidden" name="bno" value="${boardVO.bno}">
 	<input type="hidden" name="page" value="${cri.page}">
@@ -16,9 +14,10 @@
 	<input type="hidden" name="keyword" value="${cri.keyword}">
 </form>
 
+<!-- ------------------ 게시글 -------------------------- -->
 <div class="box-body">
 	<div class="form-group">
-		<label for="exampleInputEmail1">Title</label> <input type="text"
+		<label for="exampleInputEmail1">Title ${boardVO.replycnt} </label> <input type="text"
 			name="title" class="form-control" value="${boardVO.title}"
 			readonly="readonly">
 	</div>
@@ -65,7 +64,12 @@
 		<!-- The time line -->
 		<ul class="timeline">
 			<!--  timeline time label -->
-			<li class="time-label" id="repliesDiv"><span class="bg-green">Replies List</span></li>
+			<li class="time-label" id="repliesDiv">
+				<span class="bg-green">
+					Replies List
+					<small id="replycntSmall2">[ ${boardVO.replycnt} ]</small>
+				</span>
+			</li>
 			<!-- Handlebar 사용 -->
 			<script id="template" type="text/x-handlebars-template">
 			{{#each .}}
@@ -79,7 +83,7 @@
 						<div class="timeline-body">{{replytext}}</div>
 						<div class="timeline-footer">
 							<a class="btn btn-primary btn-xs"
-								data-toggle="modal" data-target="#modifyModal">Modify</a>
+								data-toggle="modal" data-target="#modalModify">Modify</a>
 						</div>
 					</div>
 				</li>
@@ -96,7 +100,7 @@
 	</div>
 </div>
 <!-- Modal : 덧글 수정,삭제 위한 별도의 창 -->
-<div id="modifyModal" class="modal modal-primary fade" role="dialog">
+<div id="modalModify" class="modal modal-primary fade" role="dialog">
 	<div class="modal-dialog">
 		<!-- Modal content -->
 		<div class="modal-content">
@@ -116,7 +120,9 @@
 	</div>	<!-- 2. modal-dialog -->
 </div>	<!-- 1. modifyModal -->
 
-<!-- readPage.js 따로 분류 -->
+<!-- handlebars -->
+<script	src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.js"></script>
+<!-- readPage.js -->
 <script src="/resources/js/readPage.js"></script>
 
 <%@ include file="../include/footer.jsp"%>
