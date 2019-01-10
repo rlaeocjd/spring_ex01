@@ -4,9 +4,15 @@
 	pageEncoding="UTF-8"%>
 
 <%@ include file="../include/header.jsp"%>
-
+<style type="text/css">
+	.popup {position: absolute;}
+	.back { background-color: gray; opacity: 0.5; width: 100%; height: 300%; overflow: hidden; z-index: 1101;}
+	.front { z-index: 1110; opacity:1; boarder:1px; margin: auto;}
+	.show { position: relative; max-width: 1200px; max-height: 800px; overflow: auto;}
+</style>
 
 <form role="form">
+	<input type="hidden" name="replycnt" value="${boardVO.replycnt}">
 	<input type="hidden" name="bno" value="${boardVO.bno}">
 	<input type="hidden" name="page" value="${cri.page}">
 	<input type="hidden" name="perPageNum" value="${cri.perPageNum}">
@@ -40,6 +46,23 @@
 	<button type="submit" class="btn btn-primary" id="btnList">LIST</button>
 </div>
 
+
+<!-- 파일 조회 -->
+	<div class="popup back" style="display: none;"></div>
+	<div id="popup_front" class="popup front" style="display: none;">
+		<img id="popup_img">
+	</div>
+	<ul class="mailbox-attachments clearfix uploadedListAttach" >
+		<script id="templateAttach" type="text/x-handlebars-template">
+			<li data-src='{{fullName}}'>
+				<span class="mailbox-attachment-icon has-img"><img src="{{imgsrc}}" alt="Attachment"></span>
+				<div class="mailbox-attachment-info">
+					<a href="{{getLink}}" class="mailbox-attachment-name">{{fileName}}</a>
+					</span>
+				</div>
+			</li>
+		</script>
+	</ul>
 <!-- ------------------ 댓글 -------------------------- -->
 <div class="row">
 	<div class="col-md-12">
@@ -124,5 +147,64 @@
 <script	src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.12/handlebars.js"></script>
 <!-- readPage.js -->
 <script src="/resources/js/readPage.js"></script>
+<script src="/resources/js/upload.js"></script>
+<script>
+var bno = $('input[name="bno"]').val();
+var template = Handlebars.compile($("#templateAttach").html());
+
+$.getJSON("/sboard/getAttach/" + bno, function(list){
+	$(list).each(function(){
+		var fileInfo = getFileInfo(this);
+		var html = template(fileInfo);
+		$(".uploadedListAttach").append(html);
+	});
+});
+// 이미지 파일출려 <> 파일은 그대로 다운로드
+$(".uploadedListAttach").on("click", ".mailbox-attachment-info a", function(event){
+	var fileLink = $(this).attr("href");
+	
+	if(checkImageType(fileLink)){
+		event.preventDefault();
+		var imgTag = $("#popup_img");
+		imgTag.attr("src", fileLink);
+		
+		console.log("imgTag.attr(src) : " + imgTag.attr("src"));
+		
+		$(".popup").show('slow');
+		imgTag.addClass("show");
+	}
+});
+// 클릭시 닫힘
+$("#popup_img").on("click", function(){
+	$(".popup").hide('slow');
+});
+
+$("#btnRemove").on("click", function() { // Remove
+	var replyCnt = $('input[name="replycnt"]').val();
+	
+	console.log(replyCnt);
+	if(replyCnt > 0){
+		alert("댓글이 달린 게시물을 삭제할 수 없습니다.");
+		return;
+	}
+	
+	var arr = [];
+	$(".uploadedListAttach").each(function(index){
+		arr.push($(this).attr("data-src"));
+	});
+	
+	if(arr.length > 0){
+		$.post("/deleteAllFiles", {files:arr}, function(){
+			
+		});
+	}
+	
+	formObj.attr("method", "post");
+	formObj.attr("action", "/sboard/remove");
+	formObj.submit();
+});
+
+
+</script>
 
 <%@ include file="../include/footer.jsp"%>

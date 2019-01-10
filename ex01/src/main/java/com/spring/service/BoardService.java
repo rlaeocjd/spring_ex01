@@ -8,6 +8,7 @@ import com.spring.domain.SearchCriteria;
 
 public interface BoardService {
 
+	// 파일 업로드 테이블 추가
 	public void regist(BoardVO board) throws Exception;
 
 	public BoardVO read(Integer bno) throws Exception;
@@ -26,5 +27,6 @@ public interface BoardService {
 	public List<BoardVO> listSearchCriteria(SearchCriteria cri) throws Exception;
 
 	public int listSearchCount(SearchCriteria cri) throws Exception;
-	
+	// 조회페이지 파일 업로드
+	public List<String> getAttach(Integer bno) throws Exception;
 }

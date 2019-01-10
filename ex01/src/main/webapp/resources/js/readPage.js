@@ -6,6 +6,7 @@
 var formObj = null; // 게시판 : hidden 요소 저장
 var bno = 0; // 댓글이 걸려있는 본글의 번호
 var replyPage = 0; // 사용자가 보고있는 댓글 페이징
+//var template = null;
 
 $(document).ready(function() {
 	init();
@@ -16,13 +17,15 @@ function init() {
 	formObj = $("form[role='form']");
 	bno = $('input[name="bno"]').val();
 	replyPage = 1;
+//	template = Handlebars.compile($("#templateAttach").html());
 }
 
 function event() {
 	boardEvent();
 	replyEvent();
+//	fileEvent();
 }
-
+/* Event */
 /* 게시글 관련 이벤트 */
 function boardEvent() {
 	$("#btnModify").on("click", function() { // Modify
@@ -30,25 +33,63 @@ function boardEvent() {
 		formObj.attr("action", "/sboard/modifyPage");
 		formObj.submit();
 	});
-	$("#btnRemove").on("click", function() { // Remove
-		formObj.attr("method", "post");
-		formObj.attr("action", "/sboard/remove");
-		formObj.submit();
-	});
+//	$("#btnRemove").on("click", function() { // Remove
+//		var replyCnt = $("#replycntSmail").html();
+//		
+//		if(replyCnt > 0){
+//			alert("댓글이 달린 게시물을 삭제할 수 없습니다.");
+//			return;
+//		}
+//		
+//		var arr = [];
+//		$(".uploadedListAttach").each(function(index){
+//			arr.push($(this).attr("data-src"));
+//		});
+//		
+//		if(arr.length > 0){
+//			$.post("/deleteAllFiles", {files:arr}, function(){
+//				
+//			});
+//		}
+//		
+//		formObj.attr("method", "post");
+//		formObj.attr("action", "/sboard/remove");
+//		formObj.submit();
+//	});
 	$("#btnList").on("click", function() { // List
 		formObj.attr("method", "get");
 		formObj.attr("action", "/sboard/list");
 		formObj.submit();
 	});
 }
-//덧글과 페이징 출력
-function getPage(pageInfo) {
-	$.getJSON(pageInfo, function(data) {
-		$("#modalModify").modal("hide");
-		$("#replycntSmall2").html("[ " + data.pageMaker.totalCount + " ]");
+/* 파일 업로드 관련 이벤트 */
+function fileEvent(){
+	// 조회 페이지 handlebar로 이미지,파일 나열
+	$.getJSON("/sboard/getAttach/" + bno, function(list){
+		$(list).each(function(){
+			var fileInfo = getFileInfo(this);
+			var html = template(fileInfo);
+			$(".uploadedListAttach").append(html);
+		});
+	});
+	// 이미지 파일출려 <> 파일은 그대로 다운로드
+	$(".uploadedListAttach").on("click", ".mailbox-attachment-info a", function(event){
+		var fileLink = $(this).attr("href");
 		
-		printData(data.list, $("#repliesDiv"), $("#template"));
-		printPaging(data.pageMaker, $(".pagination"));
+		if(checkImageType(fileLink)){
+			event.preventDefault();
+			var imgTag = $("#popup_img");
+			imgTag.attr("src", fileLink);
+			
+			console.log("imgTag.attr(src) : " + imgTag.attr("src"));
+			
+			$(".popup").show('slow');
+			imgTag.addClass("show");
+		}
+	});
+	// 클릭시 닫힘
+	$("#popup_img").on("click", function(){
+		$(".popup").hide('slow');
 	});
 }
 /* 댓글 관련 이벤트 */
@@ -154,8 +195,9 @@ function replyEvent() {
 		});
 	})
 }
+/* end Event */
 
-
+/* funtion */
 // Handlebars를 이용하여 덧글 출력
 function printData(replyArr, target, templateObject) {
 	var template = Handlebars.compile(templateObject.html());
@@ -191,3 +233,14 @@ function printPaging(pageMaker, target) {
 	target.html(str);
 };
 
+//덧글과 페이징 출력
+function getPage(pageInfo) {
+	$.getJSON(pageInfo, function(data) {
+		$("#modalModify").modal("hide");
+		$("#replycntSmall2").html("[ " + data.pageMaker.totalCount + " ]");
+		
+		printData(data.list, $("#repliesDiv"), $("#template"));
+		printPaging(data.pageMaker, $(".pagination"));
+	});
+}
+/* end funtion */

@@ -25,4 +25,13 @@ public interface BoardDAO {
 	
 	// 조회 숫자 처리
 	public void updateViewCnt(Integer bno) throws Exception;
+	
+	// 파일 업로드 추가 후 attach 테이블 관련, 매개변수 : 파일명
+	public void addAttach(String fullName) throws Exception;
+	
+	// 조회페이지 파일 업로드
+	public List<String> getAttach(Integer bno) throws Exception;
+	// 게시물 수정, 삭제 작업의 파일 업로드
+	public void deleteAttach(Integer bno) throws Exception;
+	public void replaceAttach(String fullName, Integer bno) throws Exception;
 }
