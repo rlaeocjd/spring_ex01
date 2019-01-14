@@ -1,5 +1,4 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%@ page session="false"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 
@@ -33,17 +32,18 @@
 			readonly="readonly">${boardVO.content}</textarea>
 	</div>
 	<div class="form-group">
-		<label for="exampleInputEmail1">Writer</label> <input type="text"
-			name="writer" class="form-control" value="${boardVO.writer}"
-			readonly="readonly">
+		<label for="exampleInputEmail1">Writer</label> 
+		<input type="text" name="writer" class="form-control" value="${boardVO.writer}"	readonly="readonly">
 	</div>
 </div>
 <!-- /.box-body -->
 
 <div class="box-footer">
-	<button type="submit" class="btn btn-warning" id="btnModify">Modify</button>
-	<button type="submit" class="btn btn-danger" id="btnRemove">REMOVE</button>
-	<button type="submit" class="btn btn-primary" id="btnList">LIST</button>
+	<c:if test="${login.uid == boardVO.writer}">
+		<button type="submit" class="btn btn-warning" id="btnModify">Modify</button>
+		<button type="submit" class="btn btn-danger" id="btnRemove">REMOVE</button>
+	</c:if>
+		<button type="submit" class="btn btn-primary" id="btnList">LIST</button>
 </div>
 
 
@@ -69,18 +69,25 @@
 		<!-- 댓글 등록 -->
 		<div class="box box-success">
 			<div class="box-header">
-				<h3 class="box-title">ADD NEW REPLY</h3>
+				<h3 class="box-title">REPLY</h3>
 			</div>
-			<div class="box-body">
-				<label for="exampleInputEmail1">Writer</label>
-				<input type="text" class="form-control" placeholder="USER ID" id="newReplyWriter">
-				<label for="exampleInputEmail1">Reply Text</label>
-				<input type="text" class="form-control" placeholder="REPLY TEXT" id="newReplyText">
-			</div>
-			<!-- /.box-body -->
-			<div class="box-footer">
-				<button type="button" class="btn btn-success" id="replyAddBtn">ADD REPLY</button>
-			</div>
+			<c:if test="${not empty login}">
+				<div class="box-body">
+					<label for="exampleInputEmail1">Writer</label>
+					<input type="text" class="form-control" value="${login.uid}" id="newReplyWriter" readonly="readonly">
+					<label for="exampleInputEmail1">Reply Text</label>
+					<input type="text" class="form-control" placeholder="REPLY TEXT" id="newReplyText">
+				</div>
+				<!-- /.box-body -->
+				<div class="box-footer">
+					<button type="button" class="btn btn-success" id="replyAddBtn">ADD REPLY</button>
+				</div>
+			</c:if>
+			<c:if test="${empty login}">
+				<div class="box-body">
+					<div><a href="javascript:goLogin();">Login Please</a></div>
+				</div>
+			</c:if>
 		</div>
 		
 		<!-- 댓글과 페이징 처리 -->
@@ -105,8 +112,9 @@
 						<h3 class="timeline-header"><strong>{{rno}}</strong> -{{replyer}}</h3>
 						<div class="timeline-body">{{replytext}}</div>
 						<div class="timeline-footer">
-							<a class="btn btn-primary btn-xs"
-								data-toggle="modal" data-target="#modalModify">Modify</a>
+							{{#eqReplyer replyer }}
+								<a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#modalModify">Modify</a>
+							{{/eqReplyer}}
 						</div>
 					</div>
 				</li>
@@ -204,7 +212,63 @@ $("#btnRemove").on("click", function() { // Remove
 	formObj.submit();
 });
 
+//{{prettifyDate regdate}} 덧글의 시간 부분 해당
+Handlebars.registerHelper("prettifyDate", function(timeValue) {
+	var dateObj = new Date(timeValue);
+	var year = dateObj.getFullYear();
+	var month = dateObj.getMonth() + 1;
+	var date = dateObj.getDate();
+	return year + "/" + month + "/" + date;
+});
 
+// 댓글 사용자 인증 추가
+Handlebars.registerHelper("eqReplyer", function(replyer, option){
+	var accum = '';
+	if( replyer == '${login.uid}' ) {
+		accum += option.fn();
+	}
+	return accum;
+});
+/* funtion */
+//Handlebars를 이용하여 덧글 출력
+function printData(replyArr, target, templateObject) {
+	var template = Handlebars.compile(templateObject.html());
+
+	var html = template(replyArr);
+	$(".replyLi").remove();
+	target.after(html);
+}
+
+//페이징 버튼 출력
+function printPaging(pageMaker, target) {
+	var str = "";
+
+	if (pageMaker.prev) {
+		str += "<li><a href='" + (pageMaker.startPage - 1) + "'> << </a></li>";
+	}
+
+	for (var i = pageMaker.startPage, len = pageMaker.endPage; i <= len; i++) {
+		var strClass = pageMaker.cri.page == i ? 'class=active' : '';
+		str += "<li " + strClass + "><a href='" + i + "'>" + i + "</a></li>";
+	}
+
+	if (pageMaker.next) {
+		str += "<li><a href='" + (pageMaker.endPage + 1) + "'> >> </a></li>";
+	}
+	target.html(str);
+};
+
+//덧글과 페이징 출력
+function getPage(pageInfo) {
+	$.getJSON(pageInfo, function(data) {
+		$("#modalModify").modal("hide");
+		$("#replycntSmall2").html("[ " + data.pageMaker.totalCount + " ]");
+		
+		printData(data.list, $("#repliesDiv"), $("#template"));
+		printPaging(data.pageMaker, $(".pagination"));
+	});
+}
+/* end funtion */
 </script>
 
 <%@ include file="../include/footer.jsp"%>

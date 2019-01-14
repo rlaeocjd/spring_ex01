@@ -51,6 +51,10 @@
           </a>
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav">
+              <li>
+              	<button id="mybtn" class=".btn-primary" value="logout"/>
+              	<a class="btn btn-primary" href="/user/logout" >logout</a>
+              </li>
               <!-- Messages: style can be found in dropdown.less-->
               <li class="dropdown messages-menu">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">
